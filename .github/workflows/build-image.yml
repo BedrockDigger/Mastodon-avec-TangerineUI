@@ -1,0 +1,82 @@
+name: Build Mastodon container release images with Tangerine UI theme
+on:
+  workflow_dispatch:
+
+jobs:
+  linux-arm64-image:
+    uses: ./.github/workflows/build-container-image.yml
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: mastodon/mastodon
+          ref: env.MASTODON_REF
+          path: mastodon
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nileane/TangerineUI-for-Mastodon
+          ref: env.TANGERINEUI_REF
+          path: tgui
+
+      - uses: docker/setup-buildx-action@v3
+        id: buildx
+
+      - name: Copy Tangerine UI files to mastodon folder and configure themes.yml
+        run: |
+          cp -r ./tgui/mastodon/app/javascript/styles/* ./mastodon/app/javascript/styles
+          echo -e "tangerineui: styles/tangerineui.scss\ntangerineui-purple: styles/tangerineui-purple.scss" >> ./mastodon/config/themes.yml
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./mastodon
+          platforms: linux/arm64
+          push: true
+          tags: bedrockdigger/mastodon-tgui:latest
+
+  linux-amd64-image:
+    uses: ./.github/workflows/build-container-image.yml
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: mastodon/mastodon
+          ref: env.MASTODON_REF
+          path: mastodon
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nileane/TangerineUI-for-Mastodon
+          ref: env.TANGERINEUI_REF
+          path: tgui
+
+      - uses: docker/setup-buildx-action@v3
+        id: buildx
+
+      - name: Copy Tangerine UI files to mastodon folder and configure themes.yml
+        run: |
+          cp -r ./tgui/mastodon/app/javascript/styles/* ./mastodon/app/javascript/styles
+          echo -e "tangerineui: styles/tangerineui.scss\ntangerineui-purple: styles/tangerineui-purple.scss" >> ./mastodon/config/themes.yml
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./mastodon
+          platforms: linux/amd64
+          push: true
+          tags: bedrockdigger/mastodon-tgui:latest
