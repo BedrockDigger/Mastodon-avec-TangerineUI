@@ -10,13 +10,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: mastodon/mastodon
-          ref: ${{ env.MASTODON_REF }}
+          ref: ${{ vars.MASTODON_REF }}
           path: mastodon
 
       - uses: actions/checkout@v4
         with:
           repository: nileane/TangerineUI-for-Mastodon
-          ref: ${{ env.TANGERINEUI_REF }}
+          ref: ${{ vars.TANGERINEUI_REF }}
           path: tgui
 
       - uses: docker/setup-buildx-action@v3
@@ -48,13 +48,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: mastodon/mastodon
-          ref: ${{ env.MASTODON_REF }}
+          ref: ${{ vars.MASTODON_REF }}
           path: mastodon
 
       - uses: actions/checkout@v4
         with:
           repository: nileane/TangerineUI-for-Mastodon
-          ref: ${{ env.TANGERINEUI_REF }}
+          ref: ${{ vars.TANGERINEUI_REF }}
           path: tgui
 
       - uses: docker/setup-buildx-action@v3
