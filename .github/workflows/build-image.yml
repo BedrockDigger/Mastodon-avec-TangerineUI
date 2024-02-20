@@ -4,7 +4,6 @@ on:
 
 jobs:
   linux-arm64-image:
-    uses: ./.github/workflows/build-container-image.yml
     runs-on: self-hosted
 
     steps:
@@ -43,7 +42,6 @@ jobs:
           tags: bedrockdigger/mastodon-tgui:latest
 
   linux-amd64-image:
-    uses: ./.github/workflows/build-container-image.yml
     runs-on: ubuntu-latest
 
     steps:
