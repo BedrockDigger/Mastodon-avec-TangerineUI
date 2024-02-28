@@ -55,6 +55,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: main
+          
       - uses: actions/checkout@v4
         with:
           repository: mastodon/mastodon
