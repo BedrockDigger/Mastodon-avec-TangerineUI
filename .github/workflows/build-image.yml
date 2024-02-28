@@ -35,7 +35,7 @@ jobs:
       - name: Apply diff for Chinese search optimization
         run: |
           cd ./mastodon
-          git apply ../main/chinese-search-optimization.diff
+          git apply --ignore-space-change --ignore-whitespace ../main/chinese-search-optimization.diff
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: main
-          
+
       - uses: actions/checkout@v4
         with:
           repository: mastodon/mastodon
@@ -83,7 +83,7 @@ jobs:
       - name: Apply diff for Chinese search optimization
         run: |
           cd ./mastodon
-          git apply ../main/chinese-search-optimization.diff
+          git apply --ignore-space-change --ignore-whitespace ../main/chinese-search-optimization.diff
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
