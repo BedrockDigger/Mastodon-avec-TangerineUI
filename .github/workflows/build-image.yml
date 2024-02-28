@@ -35,7 +35,7 @@ jobs:
       - name: Apply diff for Chinese search optimization
         run: |
           cd ./mastodon
-          git apply ./main/chinese-search-optimization.diff
+          git apply ../main/chinese-search-optimization.diff
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -74,6 +74,11 @@ jobs:
         run: |
           cp -r ./tgui/mastodon/app/javascript/styles/* ./mastodon/app/javascript/styles
           echo -e "tangerineui: styles/tangerineui.scss\ntangerineui-purple: styles/tangerineui-purple.scss" >> ./mastodon/config/themes.yml
+
+      - name: Apply diff for Chinese search optimization
+        run: |
+          cd ./mastodon
+          git apply ../main/chinese-search-optimization.diff
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
