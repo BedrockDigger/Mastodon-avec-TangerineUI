@@ -30,7 +30,7 @@ jobs:
       - name: Copy Tangerine UI files to mastodon folder and configure themes.yml
         run: |
           cp -r ./tgui/mastodon/app/javascript/styles/* ./mastodon/app/javascript/styles
-          echo -e "tangerineui: styles/tangerineui.scss\ntangerineui-purple: styles/tangerineui-purple.scss\ntangerineui-cherry: styles/tangerineui-cherry.scss" >> ./mastodon/config/themes.yml
+          echo -e "tangerineui: styles/tangerineui.scss\ntangerineui-purple: styles/tangerineui-purple.scss" >> ./mastodon/config/themes.yml
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -68,7 +68,7 @@ jobs:
       - name: Copy Tangerine UI files to mastodon folder and configure themes.yml
         run: |
           cp -r ./tgui/mastodon/app/javascript/styles/* ./mastodon/app/javascript/styles
-          echo -e "tangerineui: styles/tangerineui.scss\ntangerineui-purple: styles/tangerineui-purple.scss\ntangerineui-cherry: styles/tangerineui-cherry.scss" >> ./mastodon/config/themes.yml
+          echo -e "tangerineui: styles/tangerineui.scss\ntangerineui-purple: styles/tangerineui-purple.scss" >> ./mastodon/config/themes.yml
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
