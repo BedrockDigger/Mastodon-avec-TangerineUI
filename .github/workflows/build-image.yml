@@ -35,7 +35,7 @@ jobs:
       - name: Apply diff for Chinese search optimization
         run: |
           cd ./mastodon
-          patch -i ../main/chinese-search-optimization.diff
+          git apply --ignore-space-change --ignore-whitespace ../main/chinese-search-optimization.diff
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -83,7 +83,7 @@ jobs:
       - name: Apply diff for Chinese search optimization
         run: |
           cd ./mastodon
-          patch -i ../main/chinese-search-optimization.diff
+          git apply --ignore-space-change --ignore-whitespace ../main/chinese-search-optimization.diff
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
