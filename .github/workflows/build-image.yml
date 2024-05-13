@@ -44,7 +44,7 @@ jobs:
           context: ./mastodon
           platforms: linux/arm64
           push: true
-          tags: bedrockdigger/erica-moe:latest
+          tags: bedrockdigger/mastodon-tgui:latest
 
   linux-amd64-image:
     runs-on: ubuntu-latest
@@ -82,4 +82,4 @@ jobs:
           context: ./mastodon
           platforms: linux/amd64
           push: true
-          tags: bedrockdigger/erica-moe:latest
+          tags: bedrockdigger/mastodon-tgui:latest
