@@ -1,16 +1,85 @@
-name: Build Mastodon container release images with Tangerine UI theme
+name: Build Mastodon Docker Images
+
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Mastodon release tag (e.g., v4.2.0)"
+        required: true
+  schedule:
+    # Check for new releases once a day at midnight UTC
+    - cron: "0 0 * * *"
 
 jobs:
-  linux-arm64-image:
-    runs-on: self-hosted
+  check-for-release:
+    runs-on: ubuntu-latest
+    outputs:
+      new_release: ${{ steps.check_release.outputs.new_release }}
+      release_tag: ${{ steps.check_release.outputs.release_tag }}
 
     steps:
-      - name: Checkout
+      - name: Check for new Mastodon release
+        id: check_release
+        run: |
+          # Get the latest release from Mastodon repository
+          RELEASE_DATA=$(curl -s https://api.github.com/repos/mastodon/mastodon/releases/latest)
+          LATEST_TAG=$(echo "$RELEASE_DATA" | jq -r .tag_name)
+          PUBLISHED_AT=$(echo "$RELEASE_DATA" | jq -r .published_at)
+
+          # Convert to timestamp for comparison
+          PUBLISHED_TS=$(date -d "$PUBLISHED_AT" +%s)
+          CURRENT_TS=$(date +%s)
+          ONE_DAY_AGO=$((CURRENT_TS - 86400))
+
+          echo "Latest Mastodon release: $LATEST_TAG (published at $PUBLISHED_AT)"
+
+          # Only trigger for releases in the last 24 hours (when using scheduled trigger)
+          if [ "${{ github.event_name }}" == "schedule" ] && [ "$PUBLISHED_TS" -lt "$ONE_DAY_AGO" ]; then
+            echo "No new releases in the last 24 hours"
+            echo "new_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "New release detected or manual trigger"
+            echo "new_release=true" >> $GITHUB_OUTPUT
+            echo "release_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-push:
+    needs: check-for-release
+    if: ${{ needs.check-for-release.outputs.new_release == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU for multi-architecture builds
+        uses: docker/setup-qemu-action@v3
         with:
-          path: main
+          platforms: arm64
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Get Mastodon version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            MASTODON_VERSION="${{ github.event.inputs.tag }}"
+          else
+            MASTODON_VERSION="${{ needs.check-for-release.outputs.release_tag }}"
+          fi
+
+          echo "MASTODON_VERSION=${MASTODON_VERSION}" >> $GITHUB_ENV
+
+          # Remove 'v' prefix if present
+          CLEAN_VERSION=$(echo "$MASTODON_VERSION" | sed 's/^v//')
+          echo "CLEAN_VERSION=${CLEAN_VERSION}" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
         with:
@@ -21,27 +90,26 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: nileane/TangerineUI-for-Mastodon
-          ref: ${{ vars.TANGERINEUI_REF }}
+          ref: main
           path: tgui
-
-      - uses: docker/setup-buildx-action@v3
-        id: buildx
 
       - name: Copy Tangerine UI files to mastodon folder and configure themes.yml
         run: |
           cp -r ./tgui/mastodon/app/javascript/styles/* ./mastodon/app/javascript/styles
           echo -e "tangerineui: styles/tangerineui.scss\ntangerineui-purple: styles/tangerineui-purple.scss\ntangerineui-cherry: styles/tangerineui-cherry.scss\ntangerineui-lagoon: styles/tangerineui-lagoon.scss" >> ./mastodon/config/themes.yml
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v6
         with:
           context: ./mastodon
-          platforms: linux/arm64
+          file: ./mastodon/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: bedrockdigger/mastodon-tgui:latest
+          tags: |
+            bedrockdigger/mastodon-tgui:latest
+            bedrockdigger/mastodon-tgui:${{ env.CLEAN_VERSION }}
+          no-cache: true
+          provenance: false
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
