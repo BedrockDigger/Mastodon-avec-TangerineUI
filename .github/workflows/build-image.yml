@@ -113,8 +113,8 @@ jobs:
           tags: |
             bedrockdigger/mastodon-tgui:latest
             bedrockdigger/mastodon-tgui:${{ env.CLEAN_VERSION }}
-          no-cache: true
-          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
